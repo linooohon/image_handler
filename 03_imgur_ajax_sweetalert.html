@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <!-- ajax need jquery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    
+    <!-- sweetalert -->
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        #image {
+            width: 500px;
+            height: 400px;
+            background-color: bisque;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <img src="" alt="image" id="image" referrerpolicy="no-referrer">
+    <input type="file" class="input" id="file" onchange=uploadHandler(event)>
+</body>
+
+</html>
+
+<script>
+    // get clientID and clientSecret  https://api.imgur.com/oauth2/addclient
+    // const clientID = "08faca7eb3a60c9";  // for generating accesstoken
+    // const clientSecret = "04c4319db4445b9f5da218df785c9249e1b3d16d";  // for generating accesstoken
+    const accessToken = "728a2468be88eeb6c891ce0037b726e15447c7d8"
+    const album = "MLAeS9I"  // create album on imgur
+
+    function uploadHandler(event) {
+        file = event.target.files[0];
+         // only can upload photo
+        if (/^image\//.test(file.type)) {
+            Swal.fire({
+                title: 'uploading',
+                html: 'please wait',
+                timerProgressBar: true,
+                didOpen: () => {
+                    Swal.showLoading()
+                    formData = imgurDataSetting(file)
+                    uploadImageToImgur(formData)
+                },
+            })
+        } else {
+            Swal.fire({
+                position: 'top',
+                icon: 'warning',
+                title: 'Oops, only photo pls!',
+                showConfirmButton: false,
+                timer: 1000
+            });
+        }
+    }
+
+    function imgurDataSetting(file) {
+        let formData = new FormData();
+        formData.append("image", file);
+        formData.append("title", file.name);
+        formData.append("album", album)
+        return formData;
+    }
+
+    function uploadImageToImgur(formData) {
+        $.ajax({
+            processData: false,
+            contentType: false,
+            type: "post",
+            url: "https://api.imgur.com/3/image",
+            headers: {
+                Authorization: "Bearer " + accessToken
+            },
+            mimeType: "multipart/form-data",
+            data: formData,
+            success: function (res) {
+                let responseObj = JSON.parse(res);
+                let url = responseObj.data.link; //get imgur url
+                let image = document.getElementById("image");
+                image.src = url;
+                image.style.display = "block";
+                Swal.close()
+            },
+            error: function () {
+                // console.log("error")
+                Swal.fire({
+                    position: 'top',
+                    icon: 'warning',
+                    title: 'sorry, we are fixing our upload service!',
+                    showConfirmButton: false,
+                    timer: 1000
+                });
+                
+            }
+        })
+    }
+
+</script>

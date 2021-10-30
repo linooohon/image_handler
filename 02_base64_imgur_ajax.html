@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <!-- ajax need jquery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>    
+    
+    <style>
+        #image {
+            width: 500px;
+            height: 400px;
+            background-color: bisque;
+            display: none;
+        }
+    </style>
+
+</head>
+
+<body>
+    <img src="" alt="image" id="image" referrerpolicy="no-referrer">
+    <input type="file" class="input" id="file" onchange=watchUpload(event)>
+</body>
+</html>
+
+<script>
+    // get clientID and clientSecret  https://api.imgur.com/oauth2/addclient
+    const clientID = "08faca7eb3a60c9";  // for generate accesstoken
+    const clientSecret = "04c4319db4445b9f5da218df785c9249e1b3d16d";  // for generate accesstoken
+    const accessToken = "728a2468be88eeb6c891ce0037b726e15447c7d8" 
+    const album = "MLAeS9I"  // create album on imgur
+
+    function watchUpload(e) {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+            //塞 base64 在富文本上顯示
+            var base64 = reader.result;
+            console.log(base64);
+            let image = document.getElementById("image");
+            image.src = base64;
+            image.style.display = "block";
+        }
+
+        formData = imgurDataSetting(file)
+        uploadImageToImgur(formData)
+    }
+
+    function imgurDataSetting(file) {
+        let formData = new FormData();
+        formData.append("image", file);
+        formData.append("title", file.name);
+        formData.append("album", album)
+        return formData;
+    }
+
+    function uploadImageToImgur(formData) {
+        $.ajax({
+            // async: true,
+            // crossDomain: true,
+            processData: false,
+            contentType: false,
+            type: "post",
+            url: "https://api.imgur.com/3/image",
+            headers: {
+                Authorization: "Bearer " + accessToken
+            },
+            mimeType: "multipart/form-data",
+            data: formData,
+            success: function(res) {
+                let responseObj = JSON.parse(res);
+                let url = responseObj.data.link;
+                // console.log(url)
+                image.src = url;
+                image.style.display = "block";
+            },
+            error: function() {
+                console.log("error")
+            }
+        })
+    }
+</script>
