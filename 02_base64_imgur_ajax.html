@@ -40,7 +40,6 @@
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = () => {
-            //塞 base64 在富文本上顯示
             var base64 = reader.result;
             console.log(base64);
             let image = document.getElementById("image");
